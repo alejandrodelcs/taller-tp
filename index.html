@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>RINEX Parser</h2>
+
+<input type="file" id="file">
+<button id="procesar">Procesar</button>
+
+<pre id="out"></pre>
+
+<script src="./fflate.js"></script>
+
+<script type="module">
+import init, { leer_archivo } from "./pkg/project_fiuba.js";
+import { decompressZ } from "./decompressZ.js";
+
+await init();
+
+const fileInput = document.getElementById("file");
+const btn = document.getElementById("procesar");
+const out = document.getElementById("out");
+
+// 👇 DETECCIÓN
+function esGZ(b) {
+    return b[0] === 0x1F && b[1] === 0x8B;
+}
+
+function esZ(b) {
+    return b[0] === 0x1F && b[1] === 0x9D;
+}
+
+// 👇 BOTÓN
+btn.addEventListener("click", async () => {
+    const file = fileInput.files[0];
+
+    if (!file) {
+        out.textContent = "Seleccioná un archivo";
+        return;
+    }
+
+    let bytes = new Uint8Array(await file.arrayBuffer());
+
+    out.textContent = `Archivo: ${file.name}\n`;
+
+    try {
+        if (esGZ(bytes)) {
+            bytes = fflate.decompressSync(bytes);
+        }
+        else if (esZ(bytes)) {
+            bytes = decompressZ(bytes);
+        }
+        else {
+            out.textContent += "→ sin compresión\n";
+        }
+        const result = leer_archivo(bytes);
+        out.textContent += result;
+
+    } catch (e) {
+        out.textContent += `ERROR: ${e.message}`;
+    }
+});
+</script>
+
+</body>
+</html>
