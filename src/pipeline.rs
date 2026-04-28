@@ -1,85 +1,45 @@
-use std::path::Path;
-use std::process::Command;
+use crate::decompress::decompress_z;
+use crate::filetype::{FileType, detect_file_type};
+use crate::gzip::run_crx2rnx;
 
 pub fn process_file(input: &str) -> Result<String, String> {
-    println!("Input: {}", input);
+    println!("📦 Input: {}", input);
 
-    // Caso 1: ya es .o → no hacer nada
-    if input.ends_with(".o") {
-        println!("⏭Archivo ya en formato RINEX (.o)");
-        return Ok(input.to_string());
-    }
-
-    // Caso 2: es .d → solo Hatanaka
-    if input.ends_with(".d") {
-        let output = guess_output_name(input);
-
-        if !Path::new(&output).exists() {
-            println!("Ejecutando crx2rnx...");
-
-            let status = Command::new("./crx2rnx.exe")
-                .arg(input)
-                .status()
-                .map_err(|e| e.to_string())?;
-
-            if !status.success() {
-                return Err("Error en crx2rnx".into());
-            }
-        } else {
-            println!("Skip crx2rnx (ya existe {})", output);
+    match detect_file_type(input) {
+        FileType::RinexObs => {
+            println!("⏭ Ya es RINEX (.o)");
+            Ok(input.to_string())
         }
 
-        return Ok(output);
-    }
+        FileType::RinexCompressed => run_crx2rnx(input),
 
-    // Caso 3: es .Z → gzip + Hatanaka
-    if input.ends_with(".Z") {
-        let decompressed = input.trim_end_matches(".Z");
-        let output = guess_output_name(decompressed);
-
-        // gzip
-        if !Path::new(decompressed).exists() {
-            println!("🔧 Descomprimiendo .Z...");
-
-            let status = Command::new("./gzip.exe")
-                .arg("-d")
-                .arg(input)
-                .status()
-                .map_err(|e| e.to_string())?;
-
-            if !status.success() {
-                return Err("Error en gzip".into());
-            }
+        FileType::RinexZ => {
+            let d = decompress_z(input)?;
+            run_crx2rnx(&d)
         }
 
-        // crx2rnx
-        if !Path::new(&output).exists() {
-            println!("🧠 Ejecutando crx2rnx...");
-
-            let status = Command::new("./crx2rnx.exe")
-                .arg(decompressed)
-                .status()
-                .map_err(|e| e.to_string())?;
-
-            if !status.success() {
-                return Err("Error en crx2rnx".into());
-            }
+        // 🛰 SP3
+        FileType::Sp3 => {
+            println!("🛰 SP3 listo");
+            Ok(input.to_string())
         }
 
-        return Ok(output);
+        FileType::Sp3Z => {
+            println!("🔧 Descomprimiendo SP3 (.Z)...");
+            let d = decompress_z(input)?;
+            Ok(d)
+        }
+
+        FileType::Sinex => {
+            println!("📄 SINEX detectado");
+            Ok(input.to_string())
+        }
+
+        FileType::SinexZ => {
+            let d = decompress_z(input)?;
+            Ok(d)
+        }
+
+        FileType::Unknown => Err("Formato no soportado".into()),
     }
-
-    Err("Formato no soportado".into())
-}
-
-fn guess_output_name(input: &str) -> String {
-    let path = Path::new(input);
-
-    if let Some(stem) = path.file_stem() {
-        let mut name = stem.to_string_lossy().to_string();
-        name.push_str(".26o");
-        return name;
-    }
-
-    "output.26o".to_string()
 }

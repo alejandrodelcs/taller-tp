@@ -1,21 +1,10 @@
-mod pipeline;
-mod rinex_reader;
-
-use std::env;
+use project_fiuba::pipeline;
+use project_fiuba::reader;
 
 fn main() {
-    let args: Vec<String> = env::args().collect();
+    let input = std::env::args().nth(1).expect("Uso: cargo run archivo");
 
-    if args.len() < 2 {
-        eprintln!("Uso: cargo run -- <archivo.Z>");
-        return;
-    }
+    let path = pipeline::process_file(&input).expect("Error en pipeline");
 
-    let input = &args[1];
-
-    let output = pipeline::process_file(input)
-        .expect("Error en pipeline");
-
-    rinex_reader::read_rinex(&output)
-        .expect("Error leyendo RINEX");
+    reader::read_file(&path).expect("Error leyendo archivo");
 }

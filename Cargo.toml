@@ -1,7 +1,8 @@
 [package]
-name = "crn2rnx"
+name = "project_fiuba"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 rinex = "0.22.0"
+sp3 = "1"
