@@ -1,14 +1,49 @@
 use rinex::Rinex;
+use rinex::prelude::Observable;
 
-pub fn read_rinex(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+
+#[derive(Debug)]
+pub struct Record {
+    pub epoch: String,
+    pub sv: String,
+    pub obs_code: String,
+    pub value: f64,
+}
+
+
+pub fn parse_observable(obs: &Observable) -> String {
+    match obs {
+        Observable::PhaseRange(code)
+        | Observable::PseudoRange(code)
+        | Observable::Doppler(code)
+        | Observable::SSI(code) => code.to_string(),
+
+        _ => format!("{:?}", obs),
+    }
+}
+
+
+
+pub fn read_rinex(path: &str) -> Result<Vec<Record>, Box<dyn std::error::Error>> {
     println!("📡 Leyendo RINEX: {}", path);
 
     let rinex = Rinex::from_file(path)?;
 
-    println!("Tipo: {:?}", rinex.header.rinex_type);
+    let mut records = Vec::new();
 
-    for (key, signal) in rinex.signal_observations_iter().take(10) {
-        println!("{:?} → {:?}", key.epoch, signal);
+    for (key, observations) in rinex.observations_iter() {
+        for signal in &observations.signals {
+            let code = parse_observable(&signal.observable);
+
+            records.push(Record {
+                 epoch: format!("{:?}", key.epoch),
+                sv: format!("{:?}", signal.sv),
+                obs_code: code,
+                value: signal.value,
+            });
+        }
     }
-    Ok(())
+    dbg!(&records.len());
+
+    Ok(records)
 }

@@ -14,7 +14,7 @@ pub fn read_file(path: &str) -> Result<(), Box<dyn std::error::Error>> {
             let data = read_sp3(path)?;
             println!("🛰 {} registros SP3", data.len());
 
-            //Esto es solo una prueba 
+            //Esto es solo una prueba
             for rec in data.iter().take(5) {
                 println!("{:?}", rec);
             }
