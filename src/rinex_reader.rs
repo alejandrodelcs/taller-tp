@@ -25,8 +25,6 @@ pub fn parse_observable(obs: &Observable) -> String {
 
 
 pub fn read_rinex(path: &str) -> Result<Vec<Record>, Box<dyn std::error::Error>> {
-    println!("📡 Leyendo RINEX: {}", path);
-
     let rinex = Rinex::from_file(path)?;
 
     let mut records = Vec::new();
@@ -43,7 +41,7 @@ pub fn read_rinex(path: &str) -> Result<Vec<Record>, Box<dyn std::error::Error>>
             });
         }
     }
-    dbg!(&records.len());
+    dbg!(&records[0]);
 
     Ok(records)
 }

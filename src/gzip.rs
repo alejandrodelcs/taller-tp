@@ -6,7 +6,7 @@ pub fn run_crx2rnx(input: &str) -> Result<String, String> {
     let output = utils::guess_output_name(input);
 
     if !Path::new(&output).exists() {
-        println!("🧠 Ejecutando crx2rnx...");
+        println!("Ejecutando crx2rnx...");
 
         let status = Command::new("./crx2rnx.exe")
             .arg(input)

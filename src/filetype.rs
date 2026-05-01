@@ -24,15 +24,15 @@ pub fn detect_file_type(path: &str) -> FileType {
     let last = path.chars().last();
 
     match (ext.as_str(), last) {
-        // 🛰 SP3
+        //SP3
         ("sp3", _) => FileType::Sp3,
         ("z", _) if path.to_lowercase().ends_with(".sp3.z") => FileType::Sp3Z,
 
-        // 📄 SINEX
+        //SINEX
         ("snx", _) => FileType::Sinex,
         ("z", _) if path.to_lowercase().ends_with(".snx.z") => FileType::SinexZ,
 
-        // 📦 RINEX comprimido
+        //RINEX comprimido
         ("z", _) => FileType::RinexZ,
 
         // 📡 RINEX viejo formato
