@@ -1,8 +1,11 @@
 use rinex::Rinex;
 use rinex::prelude::Observable;
+use serde::Serialize;
+use serde_json;
+use std::fs::write;
 
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Record {
     pub epoch: String,
     pub sv: String,
@@ -42,6 +45,9 @@ pub fn read_rinex(path: &str) -> Result<Vec<Record>, Box<dyn std::error::Error>>
         }
     }
     dbg!(&records[0]);
+
+    let json = serde_json::to_string_pretty(&records)?;
+    write("output.json", json)?;
 
     Ok(records)
 }

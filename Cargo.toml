@@ -6,3 +6,5 @@ edition = "2024"
 [dependencies]
 rinex = "0.22.0"
 sp3 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

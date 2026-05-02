@@ -759,6 +759,8 @@ name = "project_fiuba"
 version = "0.1.0"
 dependencies = [
  "rinex",
+ "serde",
+ "serde_json",
  "sp3",
 ]
 
