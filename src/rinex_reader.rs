@@ -2,7 +2,8 @@ use rinex::Rinex;
 use rinex::prelude::Observable;
 use serde::Serialize;
 use serde_json;
-use std::fs::write;
+use std::fs::File;
+use std::io::Write;
 
 
 #[derive(Debug, Serialize)]
@@ -47,7 +48,8 @@ pub fn read_rinex(path: &str) -> Result<Vec<Record>, Box<dyn std::error::Error>>
     dbg!(&records[0]);
 
     let json = serde_json::to_string_pretty(&records)?;
-    write("output.json", json)?;
-
+    let mut file = File::create("output.json")?;
+    file.write_all(json.as_bytes())?;
+    
     Ok(records)
 }
